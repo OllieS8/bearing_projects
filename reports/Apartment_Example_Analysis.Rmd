@@ -1,7 +1,6 @@
 ---
-title: "Apartments Example Analysis"
 author: "Oliver Summers"
-date: "16/11/2020"
+date: 'Date of Analysis: `r Sys.Date()`'
 output:
   pdf_document: default
   html_document: default
@@ -24,15 +23,18 @@ Apartments2 <- Apartments2[!duplicated(Apartments2),] %>%
   janitor::clean_names() %>% 
   rename(pid = apn)
 
-
-```
-## Defining Subject Property
-Use define_subject function to set global variables of subjects lat/lon to be used in leaflet plots.
-```{r}
+# Define the subject property
 define_subject(Apartments2,
                subject_pid = '444-373-06-00')
 ```
 
+```{r include=FALSE}
+
+```
+
+---
+title: "Market Analysis: `r subject_address`"
+---
 \newpage
 
 ## Initial Leaflet Plot - Dataset A
