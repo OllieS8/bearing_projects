@@ -1,6 +1,108 @@
+# Define what datasource is
+# error check - are column names same - which are missing
+# change
+
 library(tidyverse)
 
-load(file = "clean_names_with_data.RData")
+# read in data mapping and remove calculated values
+data_mapping <- read.csv('./data-mapping/data-mapping.csv',
+                         na.strings = '') %>% 
+  slice(1:61)
+
+
+# epc ---------------------------------------------------------------------
+epc_names <- data_mapping$epc_names %>% 
+  na.omit()
+
+epc_data <- readRDS('../data/EPC2020_November.rds') %>% 
+  select(tidyselect::all_of(epc_names))
+
+data_src <- 'epc'
+
+if(data_src == 'epc'){
+  # testing whether required colnames are present 
+  assertable::assert_colnames(epc_data, epc_names)
+  
+  mapping <- data_mapping %>% select(common_snake, epc_names) %>% na.omit()
+  colnames(epc_data) <- mapping$common_snake
+  
+}
+
+# costar_sales ------------------------------------------------------------
+# DIDN't Have any calculated values
+
+costar_sales_names <- data_mapping$costar_sales_2020 %>% 
+  na.omit()
+
+costar_sales <- readxl::read_xlsx('../Data cleaning/data/Costar_sales/COS Sold 2020 (1-9) CostarExport.xlsx')%>% 
+  select(tidyselect::all_of(costar_sales_names))
+
+data_src <- 'costar_sales_2020'
+
+if(data_src == 'costar_sales_2020'){
+  assertable::assert_colnames(costar_sales, costar_sales_names)
+  
+  mapping <- data_mapping %>% select(common_snake, costar_sales_2020) %>% na.omit()
+  colnames(costar_sales) <- mapping$common_snake
+}
+
+# costar properties -------------------------------------------------------
+costar_prop_names <- data_mapping$costar_fields_property %>% 
+  na.omit()
+
+costar_props <- readxl::read_xlsx('../Data cleaning/data/Costar_Property Export/office props El Paso 8-11-20 CostarExport (1).xlsx')%>% 
+  select(tidyselect::all_of(costar_prop_names))
+
+data_src <- 'costar_fields_property'
+
+if(data_src == 'costar_fields_property'){
+  assertable::assert_colnames(costar_props, costar_prop_names)
+  
+  mapping <- data_mapping %>% select(common_snake, costar_fields_property) %>% na.omit()
+  colnames(costar_props) <- mapping$common_snake
+}
+
+
+
+# apts --------------------------------------------------------------------
+apt_names <- data_mapping$apts %>% 
+  na.omit()
+
+apts <- readRDS('../Data cleaning/data/rds_files/apartments.rds')%>% 
+  select(tidyselect::all_of(apt_names))
+
+data_src <- 'apts'
+
+if(data_src == 'apts'){
+  assertable::assert_colnames(apts, apt_names)
+  
+  mapping <- data_mapping %>% select(common_snake, apts) %>% na.omit()
+  colnames(apts) <- mapping$common_snake
+}
+
+
+
+# VALCRE ------------------------------------------------------------------
+valcre_names <- data_mapping$valcre %>% 
+  na.omit()
+
+valcre <-  read.csv('../Valcre/data/Valcre Sales.csv') %>% 
+  select(tidyselect::all_of(valcre_names))
+
+data_src <- 'valcre'
+
+if(data_src == 'valcre'){
+  assertable::assert_colnames(valcre, valcre_names)
+  
+  mapping <- data_mapping %>% select(common_snake, valcre) %>% na.omit()
+  colnames(valcre) <- mapping$common_snake
+}
+
+
+# Greg work ---------------------------------------------------------------
+
+
+load(file = "./data-mapping/clean_names_with_data.RData")
 
 
 nameType <- c("snake", "small_camel", "big_camel", "screaming_snake", "parsed", "mixed", "lower_upper", "upper_lower", "swap", "all_caps", "lower_camel", "upper_camel", "internal_parsing", "none", "flip", "sentence", "random", "title")

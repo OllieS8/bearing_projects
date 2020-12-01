@@ -1,0 +1,81 @@
+common_names,common_snake,epc_names,epc_greg_model,costar_pub_record_fields,apts,costar_sales_2020,costar_fields_property,valcre
+Parcel ID,pid,PARCEL,parcel,Parcel ID,APN,Parcel Number 1 (Min),Parcel Number 1(Min),Property.ParcelNumbers
+Property Name,property_name,,,,,Property Name,Property Name,Property.Name
+Address,address,LOCATION,property_location,Address,Address,Property Address,Property Address,Property.AddressStreet
+City,city,,,City,City,Property City,City,Property.AddressCity
+State,state,,,State,State,Property State,State,Property.AddressState
+Zip,zip,LOCATIONZIP,,Zip,Zip,Property Zip Code,Zip,Property.AddressPostalCode
+County,county,,,County,,Property County,County Name,Property.AddressCounty
+Parcel Count,parcel_count,,,,,,,Property.ParcelCount
+Property Type,property_type,IMPLOCALCODE,count_imp_code,County Use,,Property Type,PropertyType,Property.Types
+Property Type State,property_type_state,IMPSTATECODE,state_imp_code,State Use,,,,
+Property Type Secondary,property_type_secondary,,,Primary Improvement,,Secondary Type,Secondary Type,Property.SecondaryType
+Land Type,land_type,LANDCODE,land_code,Primary Land Use,,,,Property.SiteHBU
+Zoning,zoning,ZONING,zoning,Zoning Code,,Zoning,Zoning,Property.Zoning
+Year Built,year_built,YrBlt,year_built,Year Built,YrBlt,Year Built,Year Built,Property.YearBuilt
+Acres,acres,Acreage,acreage,Acres,,Land Area AC,Land Area (AC),Property.LandAreaAC
+GBA,gba,IMPSQFT,select_imp_use_bldg_area,GBA SF,SqFt,Building SF,RBA,Property.GrossBuildingArea
+Units,units,UNITS,units,Number Of Units,NoUnits,Number Of Units,Number Of Units,Property.UnitsCount
+Bldg Quality,bldg_quality,,grade,,,,,
+Height,height,,walht,,,Ceiling Height,Ceiling Height Range,Property.ClearHeight
+Bldg Construction,bldg_construction,,class,,,Construction Material,Construction Material,Property.BuildingMaterials
+No Stories,no_stories,,nstor,Number Of Stories,,Number Of Floors,Number Of Stories,Property.FloorsCount
+No Buildings,no_buildings,IMPCount,imp_use_count,,,,Total Buildings,Property.BuildingsCount
+Sprinkler,sprinkler,,sprnk,,,Fire Sprinkler,Sprinklers,Property.FireSprinkler
+Elevator,elevator,,,,,,Number Of Elevators,Property.Elevator
+No Studio,no_studio,,,,Studio,Number Of Studios Units,Number Of Studios Units,
+No 1BR,no_1br,,,,1BR,Number Of 1 Bedrooms Units,Number Of 1 Bedrooms Units,
+No 2BR,no_2br,,,,2BR,Number Of 2 Bedrooms Units,Number Of 2 Bedrooms Units,
+No 3BR,no_3br,,,,3BR,Number Of 3 Bedrooms Units,Number Of 3 Bedrooms Units,
+No 4BR,no_4br,,,,,Number Of Other Bedrooms Units,Number Of 4 Bedrooms Units,
+QualitativeLocation,qual_location,,,,,,,Property.QualitativeLocation
+QualitativeAccess,qual_access,,,,,,,Property.QualitativeAccess
+QualitativeExposure,qual_exposure,,,,,,,Property.QualitativeExposure
+QualitativeBuilding,qual_building,,,,,Building Class,Building Class,Property.QualitativeBuilding
+QualitativeCondition,qual_condition,,,,,Building Condition,,Property.QualitativeCondition
+QualitativeAppeal,qual_appeal,,,,,Star Rating,Star Rating,Property.QualitativeAppeal
+Market Value 2017,market_value_2017,MARKETVALUE,market_value_2017,,,,,
+Assessed Value,assessed_value,ASSESSEDVALUE,assessed_value_2017,Total Assessment,,Assessed Value,,
+Taxes,taxes,,est_tax_amount_2017,Current Tax Amount,,,Building Tax Expenses,
+Owner Name,owner_name,OWNER1,owner_name_1,Owners,,,Owner Name,
+Mill Rate,mill_rate,,mill_levy_2017,,,,,
+Imp_Market Value_2017,imp_market_value_2017,,,,,,,
+Land_Market_Value_2017,land_market_value_2017,,,,,,,
+Imp_Assessed Value_2017,imp_assessed_value_2017,,land_assessed_value_2017,Improved Assessment,,Assessed Improved,,
+Land_Assessed_Value_2017,land_assessed_value_2017,,imp_assessed_value_2017,Land Assessment,,Assessed Land,,
+Assessment Year,assessment_year,,,Last Assessment Year,,Assessed Year,,
+Tax Year,tax_year,,,Last Tax Year,,,Tax Year,
+Grantee,grantee,,,,,Buyer Company,,PropertySale.Buyer
+Grantor,grantor,,,,,Seller Company,,PropertySale.Seller
+Sales Price,sales_price,SALEPRICE,sale_price_1,Last Sale Price,PriceSold,Sale Price,Last Sale Price,PropertySale.Price
+Sales Date,sales_date,SALEDATE,sale_date_1,Last Sale Date,DateSold,Sale Date,Last Sale Date,PropertySale.Date
+No Property Sold,no_props_sold,PARSSOLD,pars_sold_1,,,,,
+Reception Number,reception_no,,reception_number_1,,,Document Number,,PropertySale.RecordingNumber
+Sales Price Adjusted,adj_sales_price,,adjsale,,,,,PropertySale.AnalysisPrice
+Sale Comment,sale_comment,AsrSaleCmnt,asr_sale_comment_1,Last Sale Type,,Sale Price Comment,,PropertySale.ConditionsComments
+NOI,noi,,,,,Net Income,,PropertySale.NetOperatingIncome
+Cap Rate,cap_rate,,,,CapRate,Actual Cap Rate,Cap Rate,PropertySale.CapitalizationRate
+Neighborhood,neighborhood,CmntyArea,nh,,,,,
+Market,market,,,,,Market,Market Name,Property.Market
+Submarket,submarket,,eco_area,,,Submarket Name,Submarket Name,Property.SubmarketName
+Lat,lat,,long,Latitude,Latitude,Latitude,Latitude,Property.Latitude
+Long,long,,lat,Longitude,Longitude,Longitude,Longitude,Property.Longitude
+$/SF,pp_sf,,sp_sf,,mv_sf,Price Per SF,,PropertySale.PricePerNetRentableArea
+$/Unit,pp_unit,,sp_unit,,,Price Per Unit,$Price/Unit,PropertySale.PricePerUnit
+$/Acres,pp_ac,,,,,Price Per AC Land,,PropertySale.PricePerLandAreaAC
+$/Land SF,pp_land_sf,,,,,Price Per SF Land,,PropertySale.PricePerLandAreaSF
+Land-Bldg Ratio,land_to_bldg_ratio,LandToBldg,land_to_building,,,,,Property.LandToBuildingRatio
+Floor Area Ratio,floor_area_ratio,,,Floor Area Ratio,,Floor Area Ratio,,Property.FloorAreaRatio
+Tax Rate %,tax_rate_pct,,,,,,,
+Assessed %,assessed_pct,AssmtPct,calc_assessed_percent,,,,,
+LandSf,land_sf,LandSf,land_sf,Land SF,LandSF,Land Area SF,Land Area (SF),Property.LandAreaSF
+Market Value SF,market_value_sf,MVSF,,,,,,
+Market Value Unit,market_value_unit,MVUnit,mv_unit,,,,,
+Average Unit Size/SF,avg_unit_sf,,avg_unit_sf,,,Avg Unit SF,Avg Unit SF,
+Age,age,,,,,Age,,
+Rent_PSF,rent_psf,,,,,,Rent/SF/Yr,PropertyLease.PrimaryPsf
+Vacancy%,vacancy,,,,,Vacancy,Vacancy %,
+Occupancy%,occupancy,,,,,,,PropertyLease.PropertyOccupancy
+ReimbursementsPSF,reimbursements_psf,,,,,,,PropertyLease.ReimbursementsPsf
+Expense Structure,expense_structure,,,,,,Services,PropertyLease.ExpenseStructure
+Lease Type,lease_type,,,,,,,PropertyLease.Type
