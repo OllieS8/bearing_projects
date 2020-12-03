@@ -58,7 +58,7 @@ leaflet_plot(standardised_data,
              subject_lat)
 ```
 
-This plot includes all of the properties in the dataset. 
+This plot shows all of the properties in the dataset. 
 
 ```{r}
 
@@ -172,7 +172,6 @@ ggplot2::ggplot(sales_with_knn, ggplot2::aes(x = sales_price, fill = subject_clu
   ggplot2::geom_histogram(data=subset(sales_with_knn,subject_cluster == 'yes'), alpha = 0.6) +
   scale_fill_manual(name="Subject Cluster", values=c("darkgreen","lightblue"),labels=c("no","yes"))
 ```
-\newpage
 
 ### Within Cluster Analysis
 
@@ -188,7 +187,8 @@ ggplot(sales_with_knn %>%
              size = 2) +
    theme(axis.title.y=element_blank(),
         axis.text.y=element_blank(),
-        axis.ticks.y=element_blank())
+        axis.ticks.y=element_blank()) +
+  xlab('Sales Price')
 
 ggplot(sales_with_knn %>% 
          filter(m == subj_cluster),
@@ -224,7 +224,9 @@ ggplot(sales_with_knn %>%
   geom_point(data = sales_with_knn %>% 
                filter(pid == subject_pid),
              color = 'red',
-             size = 2)
+             size = 2) +
+  xlab('Sales Price') +
+  ylab('Number of Bedrooms')
 
 ggplot(sales_with_knn %>% 
          filter(m == subj_cluster),
@@ -233,7 +235,9 @@ ggplot(sales_with_knn %>%
   geom_point(data = sales_with_knn %>% 
                filter(pid == subject_pid),
              color = 'red',
-             size = 2)
+             size = 2) +
+  xlab('Sq Ft') +
+  ylab('Number of bedrooms')
 
 sales_time_scatter(sales_with_knn %>% 
                      filter(m == subj_cluster))
