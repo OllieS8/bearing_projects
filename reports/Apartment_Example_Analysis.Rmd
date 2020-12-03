@@ -4,11 +4,18 @@ date: 'Date of Analysis: `r Sys.Date()`'
 output:
   pdf_document: default
   html_document: default
+header-includes:
+- \usepackage{pdflscape}
+- \newcommand{\blandscape}{\begin{landscape}}
+- \newcommand{\elandscape}{\end{landscape}}
+- \usepackage{float}
 ---
+
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE)
 options(scipen = 999)
 
+# required packages
 library(bearing)
 library(dplyr)
 library(sf)
@@ -16,16 +23,27 @@ library(ggplot2)
 library(summarytools)
 library(kableExtra)
 
+# ggplot theme - can make bearing one in the future
+theme_set(theme_minimal())
+
 #import data
 data("ApartmentDataR")
 Apartments2 <- dplyr::left_join(Apartments, AssessorInfo, by = c("APN" = "APN"))
 Apartments2 <- Apartments2[!duplicated(Apartments2),] %>% 
+    # can remove this after standardise columns is used. 
   janitor::clean_names() %>% 
   rename(pid = apn)
 
+# standardise columnnames 
+# standardised_data <- standarise_colnames(data,
+#                                          data_src = '',
+#                                          data('data_mapping'))
+
 # Define the subject property
+p_id <- Apartments2$pid[1] # get rid of this when using it in a loop
+
 define_subject(Apartments2,
-               subject_pid = '444-373-06-00')
+               subject_pid = p_id)
 ```
 
 ---
@@ -35,17 +53,25 @@ title: "Market Analysis: `r subject_address`"
 
 ## Initial Leaflet Plot - Dataset A
 
+
+```{r}
+leaflet_plot(Apartments2, 
+             subject_lng, 
+             subject_lat)
+```
+
 This plot includes all of the properties in the dataset. 
 
 ```{r}
-leaflet_plot(Apartments2, subject_lng, subject_lat)
-```
 
 ## Data Preparation
+# We need to select columns to feed in to the clustering algorithm, using a select statement. 
+# Unfortunately, the algorithm cannot handle missing values (NA), so we need to omit these rows. 
+# In the future, we could look to impute these values. All values need to be converted to either numeric 
+# (for k-means) or factor (for k-modes). Finally, the lat/lon values (in GPS coords) need to be reprojected
+# into a planar projection for the knn algorithm.
 
-We need to select columns to feed in to the clustering algorithm, using a select statement. Unfortunately, the algorithm cannot handle missing values (NA), so we need to omit these rows. In the future, we could look to impute these values. All values need to be converted to either numeric (for k-means) or factor (for k-modes). Finally, the lat/lon values (in GPS coords) need to be reprojected into a planar projection for the knn algorithm.
-```{r}
-apt <- Apartments2 %>%
+prop_data <- Apartments2 %>%
   no_br() %>% 
   price_per() %>% 
   mutate(year_sold = lubridate::year(date_sold)) %>%
@@ -74,72 +100,29 @@ apt <- Apartments2 %>%
   as.data.frame()
 ```
 
-## Clustering Algorithm
-
-For the kproto clustering algorithm to work, you must provide the number of clusters you wish to find. For this example, we can loop through multiple values for the number of clusters and choose which is best. A way to automate this could be researched, or we could simply assign a number of clusters. 
-
-```{r}
-# Set the number of potential clusters to try
-num_clusts <- 2:15
-
-# Loop through different values of m, outputting the results to a list
-clusts <- lapply(num_clusts, function(m) {
-  cknn(
-    data = apt %>% select(-c(lon,lat,pid,address,date_sold)),
-    lon = apt %>% pull(lon),
-    lat = apt %>% pull(lat),
-    m = m,
-    k = 10,
-    l = 0.5
-  )
-})
-
-```
-
-
-### Automatic optimum m
+\newpage
+\blandscape
+## Grouped Properties (Clusters) - Dataset B
 
 ```{r}
 set.seed(100)
 
-m <- optimal_m(apt %>% select(-c(lon,lat,pid,address,date_sold)),
+m <- optimal_m(prop_data %>% select(-c(lon,lat,pid,address,date_sold)),
                m_values = 4:10,
                n_start = 1)
-print(m)
+
+k <- 10
 
 clusters <- cknn(
-    data = apt %>% select(-c(lon,lat,pid,address,date_sold)),
-    lon = apt %>% pull(lon),
-    lat = apt %>% pull(lat),
+    data = prop_data %>% select(-c(lon,lat,pid,address,date_sold)),
+    lon = prop_data %>% pull(lon),
+    lat = prop_data %>% pull(lat),
     m = m,
-    k = 10,
+    k = k,
     l = 0.5
   )
-```
 
-## Best Cluster - Dataset B
-We use the elbow method to determine the optimum number of clusters. 
-
-```{r}
-# Elbow plot of total sum square dists * number of clusters
-data.frame(
-  m = num_clusts,
-  ss = sapply(clusts, function(x) x$kproto$tot.withinss)
-) %>%
-  ggplot() +
-  geom_line(aes(x = m, y = ss), size = 1.2, color = "blue") +
-  labs(x = "# of Clusters", y = "Total Sum Square Dists") +
-  theme_minimal()
-
-```
-
-From the plot, it looks like 6 clusters would be a reasonable compromise. We can take the outputs for this many clusters, recombine it with the original data and then reproject the lat/lon coordinates back into GPS coordinates.
-
-```{r}
-# best_clust <- clusts[[5 - 1]]
-best_clust <- clusters
-
-sales_with_knn <- recombine_data_knn(apt, best_clust)
+sales_with_knn <- recombine_data_knn(prop_data, clusters)
 
 # reproject lat/lon to GPS coordinates - use colorado
 sales_with_knn <- reproject_latlon(sales_with_knn, old_crs = 3502, new_crs = 4326) %>%
@@ -148,9 +131,9 @@ sales_with_knn <- reproject_latlon(sales_with_knn, old_crs = 3502, new_crs = 432
   mutate(m = as.factor(m))
 ```
 
-### Summary stats of cluster
+`r subject_address` is in cluster `r get_subj_cluster(sales_with_knn, subject_pid)` of `r m`.
 
-We can then explore the summary statistics of the subject properties cluster, as well as compare to other clusters via histograms and boxplots. I have chosen to analyse PriceSold, but other variables can also be examined.
+### Summary stats of cluster
 
 ```{r}
 subj_cluster <- get_subj_cluster(sales_with_knn, subject_pid)
@@ -159,67 +142,160 @@ sales_with_knn <- sales_with_knn %>%
   mutate(subject_cluster = ifelse(m == subj_cluster, 'yes', 'no'))
 
 sales_with_knn %>% 
+  # mutate(across(where(is.numeric), format, digits=4,nsmall = 0)) %>% 
   filter(m == subj_cluster) %>%
   summarytools::descr() %>% 
-  kbl() %>% 
-  kable_paper("hover", full_width = F)
+  kbl(digits = 2) %>% 
+  kable_paper("hover", full_width = F) %>% 
+  kable_styling(latex_options='scale_down')
 
 
-sales_with_knn %>% 
-  select(-c(knn, longitude,  latitude, m)) %>% 
-  kbl %>% 
-  kable_paper("hover", full_width = F)
+# sales_with_knn %>% 
+#   select(-c(knn, longitude,  latitude, m)) %>% 
+#   kbl %>% 
+#   kable_paper("hover", full_width = F) %>% 
+#   kable_styling(latex_options='scale_down')
 ```
+\elandscape
 
 ```{r}
 facet_boxplot(sales_with_knn, variable = 'price_sold')
-
 ```
 
 ```{r}
 facet_hist(sales_with_knn, 'price_sold')
 ```
 
-```{r echo=FALSE}
+```{r}
 sales_time_scatter(sales_with_knn)
 ```
 
-```{r echo=FALSE}
+```{r}
 ggplot2::ggplot(sales_with_knn, ggplot2::aes(x = price_sold, fill = subject_cluster)) +
   ggplot2::geom_histogram(data=subset(sales_with_knn,subject_cluster == 'no'), alpha = 0.6) +
   ggplot2::geom_histogram(data=subset(sales_with_knn,subject_cluster == 'yes'), alpha = 0.6) +
   scale_fill_manual(name="Subject Cluster", values=c("darkgreen","lightblue"),labels=c("no","yes"))
 ```
+\newpage
+
+### Within Cluster Analysis
+
+```{r}
+ggplot(sales_with_knn %>% 
+         filter(m == subj_cluster),
+       aes(x = price_sold)) +
+  geom_boxplot() +
+  geom_point(data = sales_with_knn %>% 
+               filter(pid == subject_pid),
+             aes(y = 0),
+             color = 'red',
+             size = 2) +
+   theme(axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())
+
+ggplot(sales_with_knn %>% 
+         filter(m == subj_cluster),
+       aes(x = as.numeric(as.character(year_sold)))) +
+  geom_boxplot() +
+  geom_point(data = sales_with_knn %>% 
+               filter(pid == subject_pid),
+             aes(y = 0),
+             color = 'red',
+             size = 2) +
+   theme(axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank()) +
+  xlab('Year Sold')
+
+ggplot(sales_with_knn %>% 
+         filter(m == subj_cluster),
+       aes(x = sq_ft)) +
+  geom_boxplot() +
+  geom_point(data = sales_with_knn %>% 
+               filter(pid == subject_pid),
+             aes(y = 0),
+             color = 'red',
+             size = 2) +
+   theme(axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())
+
+ggplot(sales_with_knn %>% 
+         filter(m == subj_cluster),
+       aes(x = price_sold, y = no_br, group = no_br)) +
+  geom_boxplot() +
+  geom_point(data = sales_with_knn %>% 
+               filter(pid == subject_pid),
+             color = 'red',
+             size = 2)
+
+ggplot(sales_with_knn %>% 
+         filter(m == subj_cluster),
+       aes(x = sq_ft, y = no_br, group = no_br)) +
+  geom_boxplot() +
+  geom_point(data = sales_with_knn %>% 
+               filter(pid == subject_pid),
+             color = 'red',
+             size = 2)
+
+sales_time_scatter(sales_with_knn %>% 
+                     filter(m == subj_cluster))
+
+sales_time_scatter(sales_with_knn %>% 
+                     filter(m == subj_cluster),
+                   sales_var = 'ppsf')
+
+ggplot(sales_with_knn %>% 
+         filter(m == subj_cluster),
+       aes(x = sq_ft, y = price_sold)) +
+  geom_point() +
+  geom_point(data = sales_with_knn %>% 
+               filter(pid == subject_pid),
+             color = 'red',
+             size = 2) +
+  geom_smooth(method='lm', formula= y~x)
+```
+
 
 ### Plot same cluster apartments
 
-This plot shows the subject property and other properties that were found to be in the same cluster as it.
+This plot shows `r subject_address` and the properties that were found to be in the same cluster as it.
 ```{r}
 plot_clusters(sales_with_knn)
 ```
 
+\newpage
+\blandscape
+
 ## Nearest Neighbours - Dataset C
 
-This dataset includes the subject property and it's 10 nearest neighbours from the knn algorithm.
+This dataset includes `r subject_address` and it's `r k` nearest neighbours from the knn algorithm.
 
 ### NN summary stats
+
+
 ```{r}
 sales_nn <- get_nn(sales_with_knn, subject_pid)
 
 sales_nn %>% 
   summarytools::descr() %>% 
-  kbl %>% 
-  kable_paper("hover", full_width = F)
+  kbl(digits = 2) %>% 
+  kable_paper("hover", full_width = F) %>% 
+  kable_styling(latex_options='scale_down')
 
 sales_nn %>% 
-  select(-c(knn, longitude,  latitude, m)) %>% 
-  kbl %>% 
-  kable_paper("hover", full_width = F)
+  select(-c(knn, longitude,  latitude, m, subject_cluster)) %>% 
+  kbl(digits = 2) %>% 
+  kable_paper("hover", full_width = F) %>% 
+  kable_styling(latex_options='scale_down')
 ```
+
+\elandscape
 
 ### Plot nearest neighbours
 
-```{R}
+```{r}
 leaflet_plot(sales_nn,
              subject_lng,
              subject_lat)
