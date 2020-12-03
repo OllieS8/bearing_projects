@@ -29,20 +29,18 @@ theme_set(theme_minimal())
 #import data
 data("ApartmentDataR")
 Apartments2 <- dplyr::left_join(Apartments, AssessorInfo, by = c("APN" = "APN"))
-Apartments2 <- Apartments2[!duplicated(Apartments2),] %>% 
-    # can remove this after standardise columns is used. 
-  janitor::clean_names() %>% 
-  rename(pid = apn)
+data <- Apartments2[!duplicated(Apartments2),] 
 
 # standardise columnnames 
-# standardised_data <- standarise_colnames(data,
-#                                          data_src = '',
-#                                          data('data_mapping'))
+data('data_mapping')
+standardised_data <- standardise_colnames(data,
+                                         data_src = 'apts',
+                                         data_mapping)
 
 # Define the subject property
-p_id <- Apartments2$pid[1] # get rid of this when using it in a loop
+p_id <- standardised_data$pid[1] # get rid of this when using it in a loop
 
-define_subject(Apartments2,
+define_subject(standardised_data,
                subject_pid = p_id)
 ```
 
@@ -55,7 +53,7 @@ title: "Market Analysis: `r subject_address`"
 
 
 ```{r}
-leaflet_plot(Apartments2, 
+leaflet_plot(standardised_data, 
              subject_lng, 
              subject_lat)
 ```
@@ -71,30 +69,28 @@ This plot includes all of the properties in the dataset.
 # (for k-means) or factor (for k-modes). Finally, the lat/lon values (in GPS coords) need to be reprojected
 # into a planar projection for the knn algorithm.
 
-prop_data <- Apartments2 %>%
+prop_data <- standardised_data %>%
   no_br() %>% 
   price_per() %>% 
-  mutate(year_sold = lubridate::year(date_sold)) %>%
+  mutate(year_sold = lubridate::year(sales_date)) %>%
   select(pid,
          address,
-         date_sold,
-         down_payment,
-         studio,
-         sq_ft,
-         yr_blt,
-         land_sf,
-         no_units,
+         sales_date,
+         no_studio,
+         gba,
+         year_built,
+         units,
          ppunit,
          ppsf,
          no_br,
-         price_sold,
+         sales_price,
          zip,
          year_sold,
          longitude,
          latitude) %>%
   na.omit() %>%
-  filter(yr_blt != 0) %>%
-  mutate(across(c(down_payment:price_sold), as.numeric),
+  filter(year_built != 0) %>%
+  mutate(across(c(no_studio:sales_price), as.numeric),
          across(c(zip:year_sold), as.factor)) %>% 
   reproject_latlon() %>% 
   as.data.frame()
@@ -107,14 +103,14 @@ prop_data <- Apartments2 %>%
 ```{r}
 set.seed(100)
 
-m <- optimal_m(prop_data %>% select(-c(lon,lat,pid,address,date_sold)),
+m <- optimal_m(prop_data %>% select(-c(lon,lat,pid,address,sales_date)),
                m_values = 4:10,
                n_start = 1)
 
 k <- 10
 
 clusters <- cknn(
-    data = prop_data %>% select(-c(lon,lat,pid,address,date_sold)),
+    data = prop_data %>% select(-c(lon,lat,pid,address,sales_date)),
     lon = prop_data %>% pull(lon),
     lat = prop_data %>% pull(lat),
     m = m,
@@ -159,11 +155,11 @@ sales_with_knn %>%
 \elandscape
 
 ```{r}
-facet_boxplot(sales_with_knn, variable = 'price_sold')
+facet_boxplot(sales_with_knn, variable = 'sales_price')
 ```
 
 ```{r}
-facet_hist(sales_with_knn, 'price_sold')
+facet_hist(sales_with_knn, 'sales_price')
 ```
 
 ```{r}
@@ -171,7 +167,7 @@ sales_time_scatter(sales_with_knn)
 ```
 
 ```{r}
-ggplot2::ggplot(sales_with_knn, ggplot2::aes(x = price_sold, fill = subject_cluster)) +
+ggplot2::ggplot(sales_with_knn, ggplot2::aes(x = sales_price, fill = subject_cluster)) +
   ggplot2::geom_histogram(data=subset(sales_with_knn,subject_cluster == 'no'), alpha = 0.6) +
   ggplot2::geom_histogram(data=subset(sales_with_knn,subject_cluster == 'yes'), alpha = 0.6) +
   scale_fill_manual(name="Subject Cluster", values=c("darkgreen","lightblue"),labels=c("no","yes"))
@@ -183,7 +179,7 @@ ggplot2::ggplot(sales_with_knn, ggplot2::aes(x = price_sold, fill = subject_clus
 ```{r}
 ggplot(sales_with_knn %>% 
          filter(m == subj_cluster),
-       aes(x = price_sold)) +
+       aes(x = sales_price)) +
   geom_boxplot() +
   geom_point(data = sales_with_knn %>% 
                filter(pid == subject_pid),
@@ -210,7 +206,7 @@ ggplot(sales_with_knn %>%
 
 ggplot(sales_with_knn %>% 
          filter(m == subj_cluster),
-       aes(x = sq_ft)) +
+       aes(x = gba)) +
   geom_boxplot() +
   geom_point(data = sales_with_knn %>% 
                filter(pid == subject_pid),
@@ -223,7 +219,7 @@ ggplot(sales_with_knn %>%
 
 ggplot(sales_with_knn %>% 
          filter(m == subj_cluster),
-       aes(x = price_sold, y = no_br, group = no_br)) +
+       aes(x = sales_price, y = no_br, group = no_br)) +
   geom_boxplot() +
   geom_point(data = sales_with_knn %>% 
                filter(pid == subject_pid),
@@ -232,7 +228,7 @@ ggplot(sales_with_knn %>%
 
 ggplot(sales_with_knn %>% 
          filter(m == subj_cluster),
-       aes(x = sq_ft, y = no_br, group = no_br)) +
+       aes(x = gba, y = no_br, group = no_br)) +
   geom_boxplot() +
   geom_point(data = sales_with_knn %>% 
                filter(pid == subject_pid),
@@ -248,7 +244,7 @@ sales_time_scatter(sales_with_knn %>%
 
 ggplot(sales_with_knn %>% 
          filter(m == subj_cluster),
-       aes(x = sq_ft, y = price_sold)) +
+       aes(x = gba, y = sales_price)) +
   geom_point() +
   geom_point(data = sales_with_knn %>% 
                filter(pid == subject_pid),
