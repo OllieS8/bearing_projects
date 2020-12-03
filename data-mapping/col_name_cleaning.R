@@ -6,97 +6,153 @@ library(tidyverse)
 
 # read in data mapping and remove calculated values
 data_mapping <- read.csv('./data-mapping/data-mapping.csv',
-                         na.strings = '') %>% 
+                         na.strings = '') %>%
   slice(1:61)
+
+# Generic function --------------------------------------------------------
+
+standardise_colnames <- function(df, data_src, data_mapping) {
+  if (data_src == 'costar_fields_property') {
+    costar_prop_names <- data_mapping$costar_fields_property %>%
+      na.omit()
+    
+    costar_props <- df %>%
+      select(tidyselect::all_of(costar_prop_names))
+    
+    assertable::assert_colnames(costar_props, costar_prop_names)
+    
+    mapping <-
+      data_mapping %>% select(common_snake, costar_fields_property) %>% na.omit()
+    colnames(costar_props) <- mapping$common_snake
+    print('Costar properties column names cleaned')
+    
+    return(costar_props)
+  }
+  
+  if (data_src == 'costar_sales_2020') {
+    costar_sales_names <- data_mapping$costar_sales_2020 %>%
+      na.omit()
+    
+    costar_sales <- df %>%
+      select(tidyselect::all_of(costar_sales_names))
+    
+    assertable::assert_colnames(costar_sales, costar_sales_names)
+    
+    mapping <-
+      data_mapping %>% select(common_snake, costar_sales_2020) %>% na.omit()
+    colnames(costar_sales) <- mapping$common_snake
+    print('Costar sales column names cleaned')
+    
+    return(costar_sales)
+  }
+  
+  
+  if (data_src == 'epc') {
+    epc_names <- data_mapping$epc_names %>%
+      na.omit()
+    
+    epc_data <- df %>%
+      select(tidyselect::all_of(epc_names))
+    
+    # testing whether required colnames are present
+    assertable::assert_colnames(epc_data, epc_names)
+    
+    mapping <-
+      data_mapping %>% select(common_snake, epc_names) %>% na.omit()
+    colnames(epc_data) <- mapping$common_snake
+    print('EPC data column names cleaned')
+    
+    return(epc_data)
+  }
+  
+  
+  if (data_src == 'apts') {
+    apt_names <- data_mapping$apts %>%
+      na.omit()
+    
+    apts <- df %>%
+      select(tidyselect::all_of(apt_names))
+    
+    assertable::assert_colnames(apts, apt_names)
+    
+    mapping <-
+      data_mapping %>% select(common_snake, apts) %>% na.omit()
+    colnames(apts) <- mapping$common_snake
+    print('Apartments data columns cleaned')
+    
+    return(apts)
+  }
+  
+  if (data_src == 'valcre') {
+    valcre_names <- data_mapping$valcre %>%
+      na.omit()
+    
+    valcre <- df %>%
+      select(tidyselect::all_of(valcre_names))
+    
+    assertable::assert_colnames(valcre, valcre_names)
+    
+    mapping <-
+      data_mapping %>% select(common_snake, valcre) %>% na.omit()
+    colnames(valcre) <- mapping$common_snake
+    print('Valcre column names cleaned')
+    
+    return(valcre)
+  }
+  
+  
+}
 
 
 # epc ---------------------------------------------------------------------
-epc_names <- data_mapping$epc_names %>% 
-  na.omit()
 
-epc_data <- readRDS('../data/EPC2020_November.rds') %>% 
-  select(tidyselect::all_of(epc_names))
+epc_data <- readRDS('../data/EPC2020_November.rds')
 
-data_src <- 'epc'
-
-if(data_src == 'epc'){
-  # testing whether required colnames are present 
-  assertable::assert_colnames(epc_data, epc_names)
-  
-  mapping <- data_mapping %>% select(common_snake, epc_names) %>% na.omit()
-  colnames(epc_data) <- mapping$common_snake
-  
-}
+epc_data_cleaned <- standardise_colnames(epc_data,
+                                         data_src = 'epc',
+                                         data_mapping)
 
 # costar_sales ------------------------------------------------------------
 # DIDN't Have any calculated values
+costar_sales <-
+  readxl::read_xlsx('../Data cleaning/data/Costar_sales/COS Sold 2020 (1-9) CostarExport.xlsx')
 
-costar_sales_names <- data_mapping$costar_sales_2020 %>% 
-  na.omit()
+costar_sales_cleaned <- standardise_colnames(costar_sales,
+                                             data_src = 'costar_sales_2020',
+                                             data_mapping)
 
-costar_sales <- readxl::read_xlsx('../Data cleaning/data/Costar_sales/COS Sold 2020 (1-9) CostarExport.xlsx')%>% 
-  select(tidyselect::all_of(costar_sales_names))
 
-data_src <- 'costar_sales_2020'
 
-if(data_src == 'costar_sales_2020'){
-  assertable::assert_colnames(costar_sales, costar_sales_names)
-  
-  mapping <- data_mapping %>% select(common_snake, costar_sales_2020) %>% na.omit()
-  colnames(costar_sales) <- mapping$common_snake
-}
 
 # costar properties -------------------------------------------------------
-costar_prop_names <- data_mapping$costar_fields_property %>% 
-  na.omit()
 
-costar_props <- readxl::read_xlsx('../Data cleaning/data/Costar_Property Export/office props El Paso 8-11-20 CostarExport (1).xlsx')%>% 
-  select(tidyselect::all_of(costar_prop_names))
+costar_props <-
+  readxl::read_xlsx(
+    '../Data cleaning/data/Costar_Property Export/office props El Paso 8-11-20 CostarExport (1).xlsx'
+  )
 
-data_src <- 'costar_fields_property'
-
-if(data_src == 'costar_fields_property'){
-  assertable::assert_colnames(costar_props, costar_prop_names)
-  
-  mapping <- data_mapping %>% select(common_snake, costar_fields_property) %>% na.omit()
-  colnames(costar_props) <- mapping$common_snake
-}
+costar_props_cleaned <- standardise_colnames(costar_props,
+                                             data_src = 'costar_fields_property',
+                                             data_mapping)
 
 
 
 # apts --------------------------------------------------------------------
-apt_names <- data_mapping$apts %>% 
-  na.omit()
 
-apts <- readRDS('../Data cleaning/data/rds_files/apartments.rds')%>% 
-  select(tidyselect::all_of(apt_names))
+apts <- readRDS('../Data cleaning/data/rds_files/apartments.rds')
 
-data_src <- 'apts'
-
-if(data_src == 'apts'){
-  assertable::assert_colnames(apts, apt_names)
-  
-  mapping <- data_mapping %>% select(common_snake, apts) %>% na.omit()
-  colnames(apts) <- mapping$common_snake
-}
+apts_cleaned <- standardise_colnames(apts,
+                                     data_src = 'apts',
+                                     data_mapping)
 
 
 
 # VALCRE ------------------------------------------------------------------
-valcre_names <- data_mapping$valcre %>% 
-  na.omit()
+valcre <-  read.csv('../Valcre/data/Valcre Sales.csv')
 
-valcre <-  read.csv('../Valcre/data/Valcre Sales.csv') %>% 
-  select(tidyselect::all_of(valcre_names))
-
-data_src <- 'valcre'
-
-if(data_src == 'valcre'){
-  assertable::assert_colnames(valcre, valcre_names)
-  
-  mapping <- data_mapping %>% select(common_snake, valcre) %>% na.omit()
-  colnames(valcre) <- mapping$common_snake
-}
+valcre_cleaned <- standardise_colnames(valcre,
+                                       data_src = 'valcre',
+                                       data_mapping)
 
 
 # Greg work ---------------------------------------------------------------

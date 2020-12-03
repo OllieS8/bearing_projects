@@ -92,7 +92,7 @@ sales_with_knn <- apt %>%
 
 # plant -------------------------------------------------------------------
 library(ggplot2)
-ggplot(sales_with_knn, aes(x=price_sold, y = sq_ft, color = as.factor(m2))) +
+ggplot(sales_with_knn, aes(x=price_sold, y = sq_ft, color = as.factor(m3))) +
   geom_point()
 
 # exporting to csv --------------------------------------------------------

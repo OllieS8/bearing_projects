@@ -58,8 +58,8 @@ Cap Rate,cap_rate,,,,CapRate,Actual Cap Rate,Cap Rate,PropertySale.Capitalizatio
 Neighborhood,neighborhood,CmntyArea,nh,,,,,
 Market,market,,,,,Market,Market Name,Property.Market
 Submarket,submarket,,eco_area,,,Submarket Name,Submarket Name,Property.SubmarketName
-Lat,lat,,long,Latitude,Latitude,Latitude,Latitude,Property.Latitude
-Long,long,,lat,Longitude,Longitude,Longitude,Longitude,Property.Longitude
+Lat,latitude,,long,Latitude,Latitude,Latitude,Latitude,Property.Latitude
+Long,longitude,,lat,Longitude,Longitude,Longitude,Longitude,Property.Longitude
 $/SF,pp_sf,,sp_sf,,mv_sf,Price Per SF,,PropertySale.PricePerNetRentableArea
 $/Unit,pp_unit,,sp_unit,,,Price Per Unit,$Price/Unit,PropertySale.PricePerUnit
 $/Acres,pp_ac,,,,,Price Per AC Land,,PropertySale.PricePerLandAreaAC
