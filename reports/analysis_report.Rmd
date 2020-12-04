@@ -1,0 +1,239 @@
+---
+author: "Oliver Summers"
+date: 'Date of Analysis: `r Sys.Date()`'
+output:
+  pdf_document: default
+  html_document: default
+header-includes:
+- \usepackage{pdflscape}
+- \newcommand{\blandscape}{\begin{landscape}}
+- \newcommand{\elandscape}{\end{landscape}}
+- \usepackage{float}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE)
+options(scipen = 999)
+
+# required packages
+library(bearing)
+library(dplyr)
+library(sf)
+library(ggplot2)
+library(summarytools)
+library(kableExtra)
+
+# ggplot theme - can make bearing one in the future
+theme_set(theme_minimal())
+
+# Define the subject property
+# p_id <- standardised_data$pid[1] # get rid of this when using it in a loop
+
+define_subject(standardised_data,
+               subject_pid = p_id)
+```
+
+---
+title: "Market Analysis: `r subject_address`"
+---
+\newpage
+
+## Initial Leaflet Plot - Dataset A
+
+
+```{r}
+leaflet_plot(standardised_data, 
+             subject_lng, 
+             subject_lat)
+```
+
+This plot shows all of the properties in the dataset. 
+
+\newpage
+\blandscape
+## Grouped Properties (Clusters) - Dataset B
+
+`r subject_address` is in cluster `r get_subj_cluster(sales_with_knn, subject_pid)` of `r m`.
+
+### Summary stats of cluster
+
+```{r}
+subj_cluster <- get_subj_cluster(sales_with_knn, subject_pid)
+
+sales_with_knn <- sales_with_knn %>% 
+  mutate(subject_cluster = ifelse(m == subj_cluster, 'yes', 'no'))
+
+sales_with_knn %>% 
+  # mutate(across(where(is.numeric), format, digits=4,nsmall = 0)) %>% 
+  filter(m == subj_cluster) %>%
+  summarytools::descr() %>% 
+  kbl(digits = 2) %>% 
+  kable_paper("hover", full_width = F) %>% 
+  kable_styling(latex_options='scale_down')
+
+
+# sales_with_knn %>% 
+#   select(-c(knn, longitude,  latitude, m)) %>% 
+#   kbl %>% 
+#   kable_paper("hover", full_width = F) %>% 
+#   kable_styling(latex_options='scale_down')
+```
+\elandscape
+
+```{r}
+facet_boxplot(sales_with_knn, variable = 'sales_price')
+```
+
+```{r}
+facet_hist(sales_with_knn, 'sales_price')
+```
+
+```{r}
+sales_time_scatter(sales_with_knn)
+```
+
+```{r}
+ggplot2::ggplot(sales_with_knn, ggplot2::aes(x = sales_price, fill = subject_cluster)) +
+  ggplot2::geom_histogram(data=subset(sales_with_knn,subject_cluster == 'no'), alpha = 0.6) +
+  ggplot2::geom_histogram(data=subset(sales_with_knn,subject_cluster == 'yes'), alpha = 0.6) +
+  scale_fill_manual(name="Subject Cluster", values=c("darkgreen","lightblue"),labels=c("no","yes"))
+```
+
+### Within Cluster Analysis
+
+```{r}
+ggplot(sales_with_knn %>% 
+         filter(m == subj_cluster),
+       aes(x = sales_price)) +
+  geom_boxplot() +
+  geom_point(data = sales_with_knn %>% 
+               filter(pid == subject_pid),
+             aes(y = 0),
+             color = 'red',
+             size = 2) +
+   theme(axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank()) +
+  xlab('Sales Price')
+
+ggplot(sales_with_knn %>% 
+         filter(m == subj_cluster),
+       aes(x = as.numeric(as.character(year_sold)))) +
+  geom_boxplot() +
+  geom_point(data = sales_with_knn %>% 
+               filter(pid == subject_pid),
+             aes(y = 0),
+             color = 'red',
+             size = 2) +
+   theme(axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank()) +
+  xlab('Year Sold')
+
+ggplot(sales_with_knn %>% 
+         filter(m == subj_cluster),
+       aes(x = gba)) +
+  geom_boxplot() +
+  geom_point(data = sales_with_knn %>% 
+               filter(pid == subject_pid),
+             aes(y = 0),
+             color = 'red',
+             size = 2) +
+   theme(axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank())
+
+ggplot(sales_with_knn %>% 
+         filter(m == subj_cluster),
+       aes(x = sales_price, y = no_br, group = no_br)) +
+  geom_boxplot() +
+  geom_point(data = sales_with_knn %>% 
+               filter(pid == subject_pid),
+             color = 'red',
+             size = 2) +
+  xlab('Sales Price') +
+  ylab('Number of Bedrooms')
+
+ggplot(sales_with_knn %>% 
+         filter(m == subj_cluster),
+       aes(x = gba, y = no_br, group = no_br)) +
+  geom_boxplot() +
+  geom_point(data = sales_with_knn %>% 
+               filter(pid == subject_pid),
+             color = 'red',
+             size = 2) +
+  xlab('Sq Ft') +
+  ylab('Number of bedrooms')
+
+sales_time_scatter(sales_with_knn %>% 
+                     filter(m == subj_cluster))
+
+sales_time_scatter(sales_with_knn %>% 
+                     filter(m == subj_cluster),
+                   sales_var = 'ppsf')
+
+ggplot(sales_with_knn %>% 
+         filter(m == subj_cluster),
+       aes(x = gba, y = sales_price)) +
+  geom_point() +
+  geom_point(data = sales_with_knn %>% 
+               filter(pid == subject_pid),
+             color = 'red',
+             size = 2) +
+  geom_smooth(method='lm', formula= y~x)
+```
+
+
+### Plot same cluster apartments
+
+This plot shows `r subject_address` and the properties that were found to be in the same cluster as it.
+```{r}
+plot_clusters(sales_with_knn)
+```
+
+\newpage
+\blandscape
+
+## Nearest Neighbours - Dataset C
+
+This dataset includes `r subject_address` and it's `r k` nearest neighbours from the knn algorithm.
+
+### NN summary stats
+
+
+```{r}
+sales_nn <- get_nn(sales_with_knn, subject_pid)
+
+sales_nn %>% 
+  summarytools::descr() %>% 
+  kbl(digits = 2) %>% 
+  kable_paper("hover", full_width = F) %>% 
+  kable_styling(latex_options='scale_down')
+
+sales_nn %>% 
+  select(-c(knn, longitude,  latitude, m, subject_cluster)) %>% 
+  kbl(digits = 2) %>% 
+  kable_paper("hover", full_width = F) %>% 
+  kable_styling(latex_options='scale_down')
+```
+
+\elandscape
+
+### Plot nearest neighbours
+
+```{r}
+leaflet_plot(sales_nn,
+             subject_lng,
+             subject_lat)
+```
+
+```{r}
+set_lists_to_chars <- function(x) {
+  paste(unlist(x), sep='', collapse=', ')
+}
+test <- sales_nn
+
+test$knn <- mapply(set_lists_to_chars, sales_nn$knn)
+```
+
+
