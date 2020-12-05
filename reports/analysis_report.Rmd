@@ -11,6 +11,10 @@ header-includes:
 - \usepackage{float}
 ---
 
+
+
+![](./images/bearing-logo-2.png)
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo=FALSE, message=FALSE, warning=FALSE)
 options(scipen = 999)
@@ -32,6 +36,8 @@ theme_set(theme_minimal())
 define_subject(standardised_data,
                subject_pid = p_id)
 ```
+
+
 
 ---
 title: "Market Analysis: `r subject_address`"
@@ -111,6 +117,11 @@ ggplot(sales_with_knn %>%
              aes(y = 0),
              color = 'red',
              size = 2) +
+  geom_label(data = sales_with_knn %>% 
+               filter(pid == subject_pid),
+             aes(y = 0),
+             label = 'Subject Property',
+             nudge_y = 0.05)
    theme(axis.title.y=element_blank(),
         axis.text.y=element_blank(),
         axis.ticks.y=element_blank()) +
@@ -125,6 +136,11 @@ ggplot(sales_with_knn %>%
              aes(y = 0),
              color = 'red',
              size = 2) +
+   geom_label(data = sales_with_knn %>% 
+               filter(pid == subject_pid),
+            aes(y= 0),
+            label = 'Subject Property',
+            nudge_y = 0.05) +
    theme(axis.title.y=element_blank(),
         axis.text.y=element_blank(),
         axis.ticks.y=element_blank()) +
@@ -139,6 +155,11 @@ ggplot(sales_with_knn %>%
              aes(y = 0),
              color = 'red',
              size = 2) +
+  geom_label(data = sales_with_knn %>% 
+               filter(pid == subject_pid),
+            aes(y= 0),
+            label = 'Subject Property',
+            nudge_y = 0.05) +
    theme(axis.title.y=element_blank(),
         axis.text.y=element_blank(),
         axis.ticks.y=element_blank())
@@ -151,6 +172,10 @@ ggplot(sales_with_knn %>%
                filter(pid == subject_pid),
              color = 'red',
              size = 2) +
+  geom_label(data = sales_with_knn %>% 
+               filter(pid == subject_pid),
+             label = 'Subject Property',
+             nudge_y = 0.5) +
   xlab('Sales Price') +
   ylab('Number of Bedrooms')
 
@@ -172,15 +197,20 @@ sales_time_scatter(sales_with_knn %>%
                      filter(m == subj_cluster),
                    sales_var = 'ppsf')
 
-ggplot(sales_with_knn %>% 
+ggplot(sales_with_knn %>%
          filter(m == subj_cluster),
        aes(x = gba, y = sales_price)) +
   geom_point() +
-  geom_point(data = sales_with_knn %>% 
-               filter(pid == subject_pid),
-             color = 'red',
-             size = 2) +
-  geom_smooth(method='lm', formula= y~x)
+  geom_point(
+    aes(alpha = ''),
+    data = sales_with_knn %>%
+      filter(pid == subject_pid),
+    color = 'red',
+    size = 2
+  ) +
+  geom_smooth(method = 'lm', formula = y ~ x) +
+  scale_alpha_manual(values = 1) +
+  labs(alpha = 'Subject Property')
 ```
 
 

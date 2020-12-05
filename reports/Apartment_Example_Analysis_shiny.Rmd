@@ -19,6 +19,8 @@ library(shiny)
 library(leaflet)
 library(DT)
 library(mapview)
+
+data('data_mapping')  
 ```
 
 ## Load Dataset
@@ -28,40 +30,24 @@ inputPanel(
   fileInput('data',
             label = 'Property Data',
             accept = c('.rds','.RData')
-  )
+  ),
+  selectInput('data_src',
+              label = 'Data Source',
+              choices = c('epc',
+                          'costar_sales_2020',
+                          'costar_fields_property',
+                          'apts',
+                          'valcre'))
 )
 
-apt <- reactive({
-    readRDS(input$data$datapath) %>% 
-      janitor::clean_names() %>% 
-      as.data.frame()
-})
-
-renderUI({
-  
-  req(input$data)
-  
-  inputPanel(
-    selectInput(
-      'id',
-      label = 'Select property id variable name',
-      choices = colnames(apt())
-    ),
-    selectInput(
-      'address',
-      label = 'Select property address variable name',
-      choices = colnames(apt())
-    )
-  )
-})
-
 clean_apt <- reactive({
-  req(input$id)
-  req(input$variables)
+  req(input$data)
+  req(input$data_src)
   
-  apt() %>% 
-    dplyr::rename(pid = input$id,
-                  address = input$address)
+  readRDS(input$data$datapath) %>% 
+      bearing::standardise_colnames(data_src = input$data_src,
+                                    data_mapping) %>% 
+      as.data.frame()
 })
 
 ```
@@ -74,7 +60,7 @@ renderUI({
   inputPanel(
     selectInput('variables',
                 label= "Clustering Variables",
-                choices = colnames(apt()),
+                choices = colnames(clean_apt()),
                 multiple = TRUE
     )
   )
@@ -425,6 +411,48 @@ downloadHandler(
     
     } 
 )
+
+br()
+br()
+
+clustered_data <- reactive({
+  req(input$variables)
+  
+  set_lists_to_chars <- function(x) {
+    paste(unlist(x), sep = '', collapse = ', ')
+  }
+  
+  data <-
+    clustered() %>%
+    select(-c('address', 'latitude', 'longitude', input$variables)) %>%
+    inner_join(clean_apt()
+               , by = 'pid')
+  
+  data$knn <- mapply(set_lists_to_chars, data$knn)
+  
+  data
+  
+})
+
+
+
+
+
+downloadHandler(
+  filename =  function() {
+      paste("clustered_data.csv", sep = "")
+    },
+    # content is a function with argument file. content writes the plot to the device
+    content = function(file) {
+      
+      write.csv(clustered_data()
+        ,
+        file)
+    
+    },
+    outputArgs = c(label = 'Download Clustered Data')
+)
+
 
 ```
 

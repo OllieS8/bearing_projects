@@ -3,20 +3,21 @@
 library(knitr)
 library(markdown)
 library(rmarkdown)
-
+data('data_mapping')
 
 # Dataset import --------------------------------------------------------
 #import data
 data("ApartmentDataR")
 Apartments2 <- dplyr::left_join(Apartments, AssessorInfo, by = c("APN" = "APN"))
-data <- Apartments2[!duplicated(Apartments2),] %>% 
+standardised_data <- Apartments2[!duplicated(Apartments2),] %>% 
+  standardise_colnames(data_src='apts',
+                       data_mapping) %>% 
   no_br() %>%
   price_per()
 
 data <- readRDS('../data/EPC2020_November.rds')
 
 # Standardise colnames ----------------------------------------------------
-data('data_mapping')
 standardised_data <- standardise_colnames(data,
                                           data_src = 'epc',
                                           data_mapping)
@@ -24,7 +25,7 @@ standardised_data <- standardise_colnames(data,
 
 # Filtering data for reports ----------------------------------------------
 # E.G. Only want to get reports for subjects of 1st 3 rows
-report_data <- standardised_data[1:3,]
+report_data <- standardised_data[1,]
 
 start <- Sys.time()
 
