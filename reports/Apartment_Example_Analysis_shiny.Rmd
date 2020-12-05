@@ -176,7 +176,7 @@ non_na <- reactive({
   req(input$variables)
   
   clean_apt() %>% 
-    select(c(input$variables, 'pid', 'latitude','longitude','address')) %>%
+    select(c(input$variables, 'pid', 'latitude','longitude','address', 'sales_date')) %>%
     na.omit() 
 })
 
@@ -258,12 +258,12 @@ clustered <- reactive({
       
     set.seed(100)
   
-    m <- optimal_m(apt %>% select(-c(lon,lat,pid,address)),
+    m <- optimal_m(apt %>% select(-c(lon,lat,pid,address,sales_date)),
                    m_values = 4:10,
                    n_start = 1)
     
     clusters <- cknn(
-        data = apt %>% select(-c(lon,lat,pid,address)),
+        data = apt %>% select(-c(lon,lat,pid,address,sales_date)),
         lon = apt %>% pull(lon),
         lat = apt %>% pull(lat),
         m = m,
@@ -424,7 +424,7 @@ clustered_data <- reactive({
   
   data <-
     clustered() %>%
-    select(-c('address', 'latitude', 'longitude', input$variables)) %>%
+    select(-c('address', 'latitude', 'longitude','sales_date', input$variables)) %>%
     inner_join(clean_apt()
                , by = 'pid')
   
@@ -528,7 +528,7 @@ data <- reactive({
   
   data <-
     get_nn(clustered(), subject_pid = subject()$subject_pid) %>%
-    select(-c('address', 'latitude', 'longitude', input$variables)) %>%
+    select(-c('address', 'latitude', 'longitude', 'sales_date', input$variables)) %>%
     inner_join(clean_apt()
                , by = 'pid')
   
@@ -644,4 +644,38 @@ downloadHandler(
     
     } 
 )
+```
+
+
+
+```{r}
+inputPanel(
+  actionButton('goButton',
+               "Set off rmarkdown generation")
+)
+
+renderDataTable({
+  clustered()
+})
+
+observeEvent(input$goButton,
+             {
+               #  need to work this out
+               sales_with_knn <- clustered()
+               standardised_data <- clean_apt()
+               report_data <- standardised_data[4:5,]
+               m <- 4
+               k <- 10
+               
+               for (p_id in report_data$pid) {
+                 rmarkdown::render(
+                   'analysis_report.Rmd',
+                   output_file =  paste(p_id, '_report_', Sys.Date(), ".pdf", sep =
+                                          ''),
+                   output_dir = './loops'
+                 )
+                 
+               }
+             })
+ 
 ```

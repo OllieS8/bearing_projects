@@ -59,7 +59,7 @@ This plot shows all of the properties in the dataset.
 \blandscape
 ## Grouped Properties (Clusters) - Dataset B
 
-`r subject_address` is in cluster `r get_subj_cluster(sales_with_knn, subject_pid)` of `r m`.
+`r subject_address` is in cluster `r get_subj_cluster(sales_with_knn, subject_pid)` of `r m`
 
 ### Summary stats of cluster
 
@@ -142,25 +142,25 @@ ggplot(sales_with_knn %>%
        title = "Boxplot of Sales Price for Subject's Cluster")
 
 # Boxplot of Year Sold for subjects cluster
-ggplot(sales_with_knn %>% 
-         filter(m == subj_cluster),
-       aes(x = as.numeric(as.character(year_sold)))) +
-  geom_boxplot() +
-  geom_point(data = sales_with_knn %>% 
-               filter(pid == subject_pid),
-             aes(y = 0),
-             color = 'red',
-             size = 2) +
-   geom_label(data = sales_with_knn %>% 
-               filter(pid == subject_pid),
-            aes(y= 0),
-            label = 'Subject Property',
-            nudge_y = 0.05) +
-   theme(axis.title.y=element_blank(),
-        axis.text.y=element_blank(),
-        axis.ticks.y=element_blank()) +
-  labs(x = 'Year Sold',
-       title = "Boxplot of Year Sold for Subject's Cluster")
+# ggplot(sales_with_knn %>% 
+#          filter(m == subj_cluster),
+#        aes(x = as.numeric(as.character(year_sold)))) +
+#   geom_boxplot() +
+#   geom_point(data = sales_with_knn %>% 
+#                filter(pid == subject_pid),
+#              aes(y = 0),
+#              color = 'red',
+#              size = 2) +
+#    geom_label(data = sales_with_knn %>% 
+#                filter(pid == subject_pid),
+#             aes(y= 0),
+#             label = 'Subject Property',
+#             nudge_y = 0.05) +
+#    theme(axis.title.y=element_blank(),
+#         axis.text.y=element_blank(),
+#         axis.ticks.y=element_blank()) +
+#   labs(x = 'Year Sold',
+#        title = "Boxplot of Year Sold for Subject's Cluster")
 
 # Boxplot of GBA for subjects cluster
 ggplot(sales_with_knn %>% 
@@ -183,41 +183,41 @@ ggplot(sales_with_knn %>%
   labs(title = "Boxplot of GBA for Subject's Cluster")
 
 # Boxplot of Sales Price for different number of bedrooms and subjects cluster
-ggplot(sales_with_knn %>% 
-         filter(m == subj_cluster),
-       aes(x = sales_price, y = no_br, group = no_br)) +
-  geom_boxplot() +
-  geom_point(data = sales_with_knn %>% 
-               filter(pid == subject_pid),
-             color = 'red',
-             size = 2) +
-  geom_label(data = sales_with_knn %>% 
-               filter(pid == subject_pid),
-             label = 'Subject Property',
-             nudge_y = 0.5) +
-  labs(x = 'Sales Price',
-       y = 'Number of Bedrooms',
-       title = 'Boxplot of Sales Price for different Number of Bedrooms')
+# ggplot(sales_with_knn %>% 
+#          filter(m == subj_cluster),
+#        aes(x = sales_price, y = no_br, group = no_br)) +
+#   geom_boxplot() +
+#   geom_point(data = sales_with_knn %>% 
+#                filter(pid == subject_pid),
+#              color = 'red',
+#              size = 2) +
+#   geom_label(data = sales_with_knn %>% 
+#                filter(pid == subject_pid),
+#              label = 'Subject Property',
+#              nudge_y = 0.5) +
+#   labs(x = 'Sales Price',
+#        y = 'Number of Bedrooms',
+#        title = 'Boxplot of Sales Price for different Number of Bedrooms')
 
 # 'Boxplot of GBA for different Number of Bedrooms'
-ggplot(sales_with_knn %>% 
-         filter(m == subj_cluster),
-       aes(x = gba, y = no_br, group = no_br)) +
-  geom_boxplot() +
-  geom_point(data = sales_with_knn %>% 
-               filter(pid == subject_pid),
-             color = 'red',
-             size = 2) +
-  labs(x = 'GBA',
-       y = 'Number of bedrooms',
-       title = 'Boxplot of GBA for different Number of Bedrooms')
+# ggplot(sales_with_knn %>% 
+#          filter(m == subj_cluster),
+#        aes(x = gba, y = no_br, group = no_br)) +
+#   geom_boxplot() +
+#   geom_point(data = sales_with_knn %>% 
+#                filter(pid == subject_pid),
+#              color = 'red',
+#              size = 2) +
+#   labs(x = 'GBA',
+#        y = 'Number of bedrooms',
+#        title = 'Boxplot of GBA for different Number of Bedrooms')
 
 sales_time_scatter(sales_with_knn %>% 
                      filter(m == subj_cluster))
 
-sales_time_scatter(sales_with_knn %>% 
-                     filter(m == subj_cluster),
-                   sales_var = 'ppsf')
+# sales_time_scatter(sales_with_knn %>% 
+#                      filter(m == subj_cluster),
+#                    sales_var = 'ppsf')
 
 # Sales price vs GBA scatterplot
 ggplot(sales_with_knn %>%
